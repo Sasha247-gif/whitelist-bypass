@@ -1,0 +1,29 @@
+name: Build iOS proxy IPA
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+      - name: Toolchain
+        run: |
+          go version
+          xcodebuild -version
+      - name: Build
+        run: |
+          chmod +x build-ios.sh
+          ./build-ios.sh proxy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whitelist-bypass-proxy-ipa
+          path: prebuilts/whitelist-bypass-proxy.ipa
+          if-no-files-found: error
